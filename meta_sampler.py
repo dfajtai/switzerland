@@ -179,7 +179,7 @@ def process_patient_with_resampled_volumes(patient_id: str, image_dict: dict, se
       raise TypeError("label_dict should be a dictionary")
 
     if isinstance(limiting_labels,type(None)): #these labels will not be limited by the voxel limit and these can set a new voxel_limit
-      limiting_labels = ["tumors", "tumormelanoma"]
+      limiting_labels = ["tumors", "tumormelanoma","tumor"]
 
     if isinstance(unlimited_labels,type(None)): #these labels will not be limited by the voxel_limit
       # unlimited_labels = ["unspecificwmlesion","nonspecific"]
@@ -411,8 +411,9 @@ if __name__ == '__main__':
 
             except Exception as e:
                 print(e)
-                # continue
-                raise e
+                # raise e
+                continue
+                
            
 
     #results_df.to_csv(os.path.join(processed_dir,"results_2.csv"),index=False)
