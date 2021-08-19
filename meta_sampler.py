@@ -203,7 +203,7 @@ def process_patient_with_resampled_volumes(patient_id: str, image_dict: dict, se
       save_resampled = False
 
     resampled_image_dict = {}
-    resampled_validity_image_dict = {}
+    resampled_voxel_validity_dict = {}
     for image_type in image_dict.keys():
       resampled_image_dict[image_type] = resample_img(image_dict[image_type],target_affine=resampling_affine, target_shape=resampling_shape,
       interpolation= "linear", fill_value= np.nan)
@@ -216,7 +216,8 @@ def process_patient_with_resampled_volumes(patient_id: str, image_dict: dict, se
       validity_image = nib.Nifti1Image(validity_image_data,image_dict[image_type].affine,image_dict[image_type].header)
       resampled_validity_image = resample_img(validity_image,target_affine=resampling_affine, target_shape=resampling_shape,
       interpolation= "nearest", fill_value= 0)
-      resampled_validity_image_dict[image_type] = resampled_validity_image
+      validity_data = resampled_validity_image.get_fdata().astype(bool)
+      resampled_voxel_validity_dict[image_type] = validity_data
 
     result_cols = ["patientNumber","voxelID","class_segmentation"] + sorted(list(image_dict.keys()))
     result_df = pd.DataFrame(columns= result_cols)
@@ -256,7 +257,7 @@ def process_patient_with_resampled_volumes(patient_id: str, image_dict: dict, se
         result_dict_row["class_segmentation"] = label_name
     
         for image_type in resampled_image_dict.keys():
-          if (resampled_validity_image_dict[image_type].get_fdata()[voxel_index[0],voxel_index[1],voxel_index[2]]==0):
+          if (not resampled_voxel_validity_dict[image_type][voxel_index[0],voxel_index[1],voxel_index[2]]):
             intensity = np.nan
           else:
             intensity = resampled_image_dict[image_type].get_fdata()[voxel_index[0],voxel_index[1],voxel_index[2]]
@@ -265,7 +266,7 @@ def process_patient_with_resampled_volumes(patient_id: str, image_dict: dict, se
         result_df = result_df.append(result_dict_row, ignore_index=True)
 
     if os.path.isdir(processed_dir):
-      result_df.to_csv(os.path.join(processed_dir,f"{patient_id}_results.csv"), index=False)
+      result_df.to_csv(os.path.join(processed_dir,f"{patient_id}_results.csv"), index=False, na_rep='NaN')
     return result_df
 
 
@@ -417,4 +418,4 @@ if __name__ == '__main__':
            
 
     #results_df.to_csv(os.path.join(processed_dir,"results_2.csv"),index=False)
-    results_df.to_csv(os.path.join(processed_dir,"results_resampling.csv"),index=False)
+    results_df.to_csv(os.path.join(processed_dir,"results_resampling.csv"),index=False, na_rep='NaN')
