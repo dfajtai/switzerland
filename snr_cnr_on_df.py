@@ -61,7 +61,7 @@ def snr_cnr_on_dataframe(df: pd.DataFrame, id_col: str, class_col_name: str,
     return snr_df, cnr_df
 
 
-def pooled_snr_cnr(df: pd.DataFrame, class_col_name: str,
+def pooled_snr_cnr_on_df(df: pd.DataFrame, class_col_name: str,
              positive_classes: list, target_cols: list, abs_cnr: bool = True) -> (dict, dict):
   """
   Function to calculate snr and cnr on a dataframe while aint give a shit about the origin and meaning of the data -  NO ID COL.\n
@@ -134,9 +134,22 @@ def synthetic_test():
   print(snr_df)
   print(cnr_df)
 
-if __name__ == '__main__':
+def pooled_test():
   df = pd.read_csv("df_metastases_only.csv")
   target_cols = list(df.columns[5:-1])
+  print(f"\nsignal: metastases_melanom vs background: metastases_lung")
   snr, cnr = pooled_snr_cnr(df,"class_segmentation",["metastases_melanom"],target_cols)
+  print("snr")
   print(snr)
+  print("cnr")
   print(cnr)
+
+  print(f"\nsignal: metastases_lung vs background: metastases_melanom")
+  snr, cnr = pooled_snr_cnr(df,"class_segmentation",["metastases_lung"],target_cols)
+  print("snr")
+  print(snr)
+  print("cnr")
+  print(cnr)
+
+if __name__ == '__main__':
+  pooled_test()
